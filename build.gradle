@@ -28,3 +28,18 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+class HelloPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.extensions.add("person", Person)
+        Person ext = project.person
+        println ext
+    }
+}
+
+
+class Person{
+    def name = ""
+    void sayHay(){
+        print("say hi")
+    }
+}
