@@ -1,8 +1,13 @@
 package com.example.jiangzhiguo.myapplication
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
+import android.support.annotation.RequiresApi
 import android.support.constraint.ConstraintSet
 import android.support.v7.app.AppCompatActivity
 import android.view.View
@@ -11,6 +16,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var isSoftKeboardShow = false
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -19,15 +25,22 @@ class MainActivity : AppCompatActivity() {
         //                WindowManager.LayoutParams. FLAG_FULLSCREEN);
         setFullScreen()
         addKeyBoardListener()
+        background.setOnClickListener {
+            if (isProtraint()) {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            } else {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+        }
     }
 
     private fun setFullScreen() {
-        val options = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_FULLSCREEN
+        val options = if (isProtraint()) {
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_FULLSCREEN
+        } else {
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        }
         window.decorView.systemUiVisibility = options
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
     }
 
     private fun addKeyBoardListener() {
@@ -43,8 +56,8 @@ class MainActivity : AppCompatActivity() {
             if (screenHeight * 2 / 3 > rect.bottom) {
                 if (!isSoftKeboardShow) {
                     isSoftKeboardShow = true
-                    onSoftKeyboardStateChanged(isSoftKeboardShow, screenHeight - rect.bottom - StatusBarUtil.getNavigationBarHeight(this,true
-                    ))
+                    onSoftKeyboardStateChanged(isSoftKeboardShow, screenHeight - rect.bottom - if (isProtraint()) StatusBarUtil.getNavigationBarHeight(this, true) else 0)
+
                 }
             } else {
                 if (isSoftKeboardShow) {
@@ -71,5 +84,14 @@ class MainActivity : AppCompatActivity() {
         constraintSet.constrainHeight(et.id, DisplayUtil.dp2px(this, 60.toFloat()))
         constraintSet.connect(et.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, i)
         constraintSet.applyTo(container)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        setFullScreen()
+    }
+
+    private fun isProtraint(): Boolean {
+        return resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
 }
