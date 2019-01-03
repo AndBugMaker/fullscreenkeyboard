@@ -1,6 +1,7 @@
 package com.example.jiangzhiguo.myapplication
 
 import android.app.Activity
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Color
@@ -11,6 +12,7 @@ import android.support.annotation.RequiresApi
 import android.support.constraint.ConstraintSet
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -26,11 +28,23 @@ class MainActivity : AppCompatActivity() {
         setFullScreen()
         addKeyBoardListener()
         background.setOnClickListener {
-            if (isProtraint()) {
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            if (isSoftKeboardShow) {
+                hideSoftInput()
             } else {
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                requestedOrientation = if (isProtraint()) {
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                } else {
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                }
             }
+        }
+    }
+
+    private fun hideSoftInput() {
+        if (currentFocus != null) {
+            val mgr = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            mgr.hideSoftInputFromWindow(currentFocus!!.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS)
         }
     }
 
